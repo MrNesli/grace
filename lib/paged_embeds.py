@@ -3,6 +3,7 @@ from discord import Embed, Interaction, Message
 from discord.ext.commands import Context
 from discord.ui import View, Button
 from emoji.core import emojize
+from lib.bidirectional_iterator import BidirectionalIterator
 
 
 class EmbedIterator:
@@ -47,7 +48,7 @@ class PagedEmbedView(View):
         super().__init__()
 
         self.__message: Message | None = None
-        self.__embeds: EmbedIterator = EmbedIterator(embeds)
+        self.__embeds: BidirectionalIterator[Embed] = BidirectionalIterator(embeds)
         self.__arrow_button: List[EmbedButton] = [
             EmbedButton(self.__embeds.previous, emoji=emojize(":left_arrow:"), disabled=True),
             EmbedButton(self.__embeds.next, emoji=emojize(":right_arrow:"))
@@ -72,7 +73,7 @@ class PagedEmbedView(View):
         self.remove_item(self.previous_arrow)
         self.remove_item(self.next_arrow)
 
-        await self.__message.edit(embed=self.__embeds.current(), view=self)
+        await self.__message.edit(embed=self.__embeds.current, view=self)
 
     async def send(self, ctx: Context, ephemeral: bool = True):
-        self.__message = await ctx.send(embed=self.__embeds.current(), view=self, ephemeral=ephemeral)
+        self.__message = await ctx.send(embed=self.__embeds.current, view=self, ephemeral=ephemeral)
